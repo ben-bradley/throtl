@@ -1,7 +1,7 @@
 {
   "name": "throtl",
   "version": "0.0.1",
-  "description": "Set arbitrary throttle limits on Readable streams.",
+  "description": "Easily manage concurrent operations on stream data events.",
   "main": "index.js",
   "directories": {
     "example": "example",
