@@ -1,4 +1,6 @@
-# Throtl
+# Throtl [![Build Status](https://secure.travis-ci.org/ben-bradley/throtl.png)](http://travis-ci.org/ben-bradley/throtl)
+
+[![NPM](https://nodei.co/npm/throtl.png?downloads=true)](https://nodei.co/npm/throtl/)
 
 > Easily manage concurrent operations on stream data events.
 
@@ -12,7 +14,7 @@ npm install throtl
 
 ## Use
 
-```
+```javascript
 var Throtl = require('throtl'),
   Source = require('./source');
 
@@ -52,7 +54,7 @@ Instantiates a new Throtl
 
 Adjusts the throtl limit on the fly.  Based on the result of your `callback()`, you may want to tune the limit up or down.
 
-```
+```javascript
 var Throtl = require('../'),
   Source = require('./source');
 
