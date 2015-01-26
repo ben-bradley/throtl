@@ -38,16 +38,27 @@ describe('Throtl', function () {
         var options = defaultOptions();
         delete options.stream;
         Throtl(options);
-      }).should.throw('stream must be a Readable stream');
+      }).should.throw('must provide a stream');
     });
 
-    it('requires stream to be Readable', function () {
+    it('requires stream to have .pause() & .resume() methods', function () {
       (function () {
         var options = defaultOptions();
         options.stream = new Sink();
         Throtl(options);
-      }).should.throw('stream must be a Readable stream');
+      }).should.throw('stream must have .pause() and .resume() methods');
     });
+
+    it('should allow streams with .pause() and .resume() methods', function () {
+      var s = new Sink();
+      (function () {
+        var options = defaultOptions();
+        options.stream = new Sink();
+        options.stream.pause = function() {};
+        options.stream.resume = function() {};
+        Throtl(options);
+      }).should.not.throw();
+    })
 
     it('requires a callback', function () {
       (function () {
@@ -87,22 +98,22 @@ describe('Throtl', function () {
 
   });
 
-  describe('Callback synchronicity', function() {
+  describe('Callback synchronicity', function () {
 
-    it('Synchronous should work', function(done) {
+    it('Synchronous should work', function (done) {
       var options = defaultOptions();
-      options.done = function(errors) {
+      options.done = function (errors) {
         done();
       };
       Throtl(options);
     });
 
-    it('Asynchronous should work too', function(done) {
+    it('Asynchronous should work too', function (done) {
       var options = defaultOptions();
-      options.callback = function(data, next) {
+      options.callback = function (data, next) {
         process.nextTick(next);
       };
-      options.done = function(errors) {
+      options.done = function (errors) {
         done();
       };
       Throtl(options);
@@ -110,19 +121,19 @@ describe('Throtl', function () {
 
   });
 
-  describe('Errors', function() {
+  describe('Errors', function () {
 
-    it('should accumulate from next() to done()', function(done) {
+    it('should accumulate from next() to done()', function (done) {
       var options = defaultOptions();
       var counter = 0;
-      options.callback = function(data, next) {
+      options.callback = function (data, next) {
         counter += 1;
         if (counter >= 10 && counter < 20)
           next(new Error('uhoh'));
         else
           next();
       };
-      options.done = function(errors) {
+      options.done = function (errors) {
         (errors).should.be.an.Array;
         (errors.length).should.equal(10);
         done();
