@@ -113,13 +113,25 @@ describe('Throtl', function () {
       Throtl(options);
     });
 
-
+    // Use a test like this one to test the optimize flag
     it('Asynchronous should work too', function (done) {
+      this.timeout(5000);
+      var results = [];
       var options = defaultOptions({
+        limit: 3,
         callback: function (data, next) {
-          process.nextTick(next);
+          results.push(data);
+          setTimeout(next, 100);
         },
-        done: done
+        done: function(err) {
+          (err === undefined).should.be.true;
+          (results).should.be.an.Array;
+          (results.length).should.equal(100);
+          (results[99]).should.be.an.Object.with.properties(['i', 'n']);
+          (results[99].i).should.eql(9);
+          (results[99].n).should.eql(9);
+          done();
+        }
       });
       Throtl(options);
     });
