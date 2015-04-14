@@ -91,5 +91,6 @@ var throtl = new Throtl({
 
 ## Versions
 
+- 0.0.3 - Removed internal buffer in favor of stream buffer
 - 0.0.2 - Fix to allow streams not instantiated from Readable
 - 0.0.1 - Initial release
