@@ -1,4 +1,5 @@
 var should = require('should'),
+  Stream = require('stream'),
   Source = require('./lib/source'),
   SourceStack = require('./lib/source_stack'),
   Sink = require('./lib/sink'),
@@ -123,7 +124,7 @@ describe('Throtl', function () {
           results.push(data);
           setTimeout(next, 100);
         },
-        done: function(err) {
+        done: function (err) {
           (err === undefined).should.be.true;
           (results).should.be.an.Array;
           (results.length).should.equal(100);
@@ -174,6 +175,83 @@ describe('Throtl', function () {
         });
         Throtl(options);
       }).should.not.throw();
+    });
+
+  });
+
+  describe('Valve interface', function () {
+
+    it('should allow for throttling in a stream pipe', function (done) {
+      var stream = new Source();
+
+      var valve = new Throtl.Valve({
+        limit: 10,
+        objectMode: true
+      });
+
+      var results = [];
+
+      var passthrough = new Stream.PassThrough({
+        objectMode: true
+      });
+      var counter = 0;
+      passthrough.on('data', function (data) {
+        results.push(data);
+        if (++counter > 10) {
+          passthrough.pause();
+          setTimeout(passthrough.resume.bind(this), 100);
+          counter = 0;
+        }
+      });
+
+      stream
+        .pipe(valve)
+        .pipe(passthrough)
+        .pipe(valve.next);
+
+      valve.next.on('end', function () {
+        (results.length).should.eql(100);
+        (valve._paused).should.be.greaterThan(0);
+        (valve._resumed).should.be.greaterThan(0);
+        done();
+      });
+    });
+
+    it('should allow for throttling a stream pipe by the .tick() call', function (done) {
+      var stream = new Source();
+
+      var valve = new Throtl.Valve({
+        limit: 10,
+        objectMode: true
+      });
+
+      var results = [];
+
+      var passthrough = new Stream.PassThrough({
+        objectMode: true
+      });
+
+      var counter = 0;
+      passthrough.on('data', function (data) {
+        results.push(data);
+        if (++counter > 10) {
+          passthrough.pause();
+          setTimeout(passthrough.resume.bind(this), 100);
+          counter = 0;
+        }
+        valve.tick(data);
+      });
+
+      stream
+        .pipe(valve)
+        .pipe(passthrough);
+
+      passthrough.on('end', function () {
+        (results.length).should.eql(100);
+        (valve._paused).should.be.greaterThan(0);
+        (valve._resumed).should.be.greaterThan(0);
+        done();
+      });
     });
 
   });

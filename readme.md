@@ -12,11 +12,15 @@ Throtl is a module that very closely resembles [stream-worker](https://github.co
 npm install throtl
 ```
 
-## Use
+## Examples
+
+### Typical
+
+> In the typical scenario, you want to throttle a stream so that you can process the final results of the stream.
 
 ```javascript
 var Throtl = require('throtl'),
-  Source = require('./source');
+  Source = require('./test/lib/source');
 
 // Source provides a Readable objectMode stream, but any stream will work
 // check the test/lib folder to see what Source does if your curious
@@ -32,6 +36,51 @@ var myThrotl = new Throtl({
     console.log('All !data events complete from Source()');
   }
 });
+```
+
+### Pipe Valve
+
+> In the pipe valve scenario, you have a stream pipeline that you want to throttle.
+
+```javascript
+var Throtl = require('../'),
+  Source = require('./source'),
+  Transform = require('stream').Transform;
+
+var valve = new Throtl.Valve({
+  limit: 20,
+  objectMode: true
+});
+
+var transform = new Transform({
+  objectMode: true
+});
+
+transform._transform = function (data, encoding, callback) {
+  // here you might want to do some async lookups to augment the data
+  var start = new Date().getTime();
+  var _this = this;
+  setTimeout(function () {
+    data.foo = 'bar';
+    var end = new Date().getTime();
+    _this.push(data);
+  }, 1000);
+  callback();
+}
+
+transform._flush = function(done) {}
+
+var stream = new Source();
+
+/*
+  You can put valve.next in the pipeline to signal when the intermediary
+  stream data event processesing is complete.
+*/
+
+stream
+  .pipe(valve)
+  .pipe(transform)
+  .pipe(valve.next);
 ```
 
 ## API
@@ -89,8 +138,16 @@ var throtl = new Throtl({
 });
 ```
 
+### __`new Throtl.Valve(options)`__
+
+Instantiates a new Valve for a stream pipeline
+
+- __`options`__ - An object that is used to create the stream valve.  It's passed on to `require('stream').PassThrough`, but it also expects a `limit` property
+  - `limit` - (Number) The maximum number of concurrent `data` events to process
+
 ## Versions
 
+- 0.1.0 - Added Valve interface
 - 0.0.3 - Removed internal buffer in favor of stream buffer
 - 0.0.2 - Fix to allow streams not instantiated from Readable
 - 0.0.1 - Initial release
