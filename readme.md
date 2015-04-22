@@ -145,7 +145,7 @@ Instantiates a new Valve for a stream pipeline
 - __`options`__ - An object that is used to create the stream valve.  It's passed on to `require('stream').PassThrough`, but it also expects a `limit` property
   - `limit` - (Number) The maximum number of concurrent `data` events to process
 
-## Versions
+## Version History
 
 - 0.1.0 - Added Valve interface
 - 0.0.3 - Removed internal buffer in favor of stream buffer
