@@ -1,6 +1,6 @@
 {
   "name": "throtl",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Easily manage concurrent operations on stream data events.",
   "main": "index.js",
   "directories": {
@@ -27,7 +27,8 @@
   },
   "homepage": "https://github.com/ben-bradley/throtl",
   "devDependencies": {
+    "mocha": "^2.1.0",
     "should": "^4.6.1",
-    "mocha": "^2.1.0"
+    "through": "^2.3.7"
   }
 }
